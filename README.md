@@ -1,11 +1,15 @@
 # docker
 docker repo to check onnxruntime training
 
-Config:
+Configuration:
 
 -Python 3.8
+
 -Cuda 11.2
+
 -Cudnn 8.1.1
+
+Imagenet Configuration: https://github.com/onnx/models/blob/main/vision/classification/imagenet_prep.md
 
 Pip3 packages:
 Package                  Version     
