@@ -34,6 +34,7 @@ nvidia-nccl-cu11         2.14.3
 nvidia-nvtx-cu11         11.7.91     
 onnx                     1.14.0      
 onnxruntime-training     1.16.0+cu112
+
 opencv-python            4.8.0.74               
 pip                      20.0.2          
 protobuf                 3.20.2           
