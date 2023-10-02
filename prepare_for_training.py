@@ -39,3 +39,7 @@ artifacts.generate_artifacts(
    optimizer=artifacts.OptimType.AdamW,
    artifact_directory=sys.argv[2]
 )
+
+eval_model = onnx.load(f"{sys.argv[2]}/eval_model.onnx")
+eval_model.graph.output.append(onnx_model.graph.output[0])
+onnx.save(eval_model, "eval_model2.onnx")

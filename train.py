@@ -29,23 +29,45 @@ def get_pred(logits):
 
 # Training Loop :
 def train(epoch):
+    print("dentro train")
     model.train()
+    print("setup train")
     losses = []
-    for _, (data, target) in enumerate(train_loader):
+    p = 0
+    for i, (data, target) in enumerate(train_loader):
         forward_inputs = [data.reshape(len(data),3,224,224).numpy().astype(np.float32),target.numpy().astype(np.int64)]
-        for i in forward_inputs:
-            print(i.shape)
-        # breakpoint()
-        train_loss, _ = model(*forward_inputs)
+        train_loss = model(*forward_inputs)
         optimizer.step()
         model.lazy_reset_grad()
         losses.append(train_loss)
-
+        p = i
+    
+    print("image", p)
     print(f'Epoch: {epoch+1},Train Loss: {sum(losses)/len(losses):.4f}')
+
+# def train(epoch):
+#     print("dentro train")
+#     model.train()
+#     print("setup train")
+#     losses = []
+#     for i, (data, target) in enumerate(train_loader):
+#         forward_inputs = [data.reshape(len(data),3,224,224).numpy().astype(np.float32),target.numpy().astype(np.int64)]
+#         # for i in forward_inputs:
+#         #     print(i.shape)
+#         # breakpoint()
+#         train_loss = model(*forward_inputs)
+#         optimizer.step()
+#         model.lazy_reset_grad()
+#         losses.append(train_loss)
+#         print("image", i)
+
+#     print(f'Epoch: {epoch+1},Train Loss: {sum(losses)/len(losses):.4f}')
 
 # Test Loop :
 def test(epoch):
+    print("dentro train")
     model.eval()
+    print("setup eval")
     losses = []
     metric = evaluate.load('accuracy')
 
@@ -71,16 +93,22 @@ transform_test = transforms.Compose([
    normalize
 ])
 
+# Determine and set context
+if len(mx.test_utils.list_gpus())==0:
+    ctx = [mx.cpu()]
+else:
+    ctx = [mx.gpu()]
+
 # # Load and process input
-# train_data = gluon.data.DataLoader(
-#    imagenet.classification.ImageNet("/home/TrainingDataset", train=True).transform_first(transform_test),
-#    batch_size=batch_size, shuffle=False, num_workers=num_workers)
+# train_loader = gluon.data.DataLoader(
+#    imagenet.classification.ImageNet("/home/Imagenet", train=True).transform_first(transform_test),
+#    batch_size=32, shuffle=False, num_workers=4)
 print("RUNNING")
 imagenet_data = datasets.ImageNet('/home/Imagenet', split="train", transform=transform_test)
 train_loader = torch.utils.data.DataLoader(imagenet_data,
-                                          batch_size=4,
+                                          batch_size=14,
                                           shuffle=True,
-                                          num_workers=4)
+                                          num_workers=3)
 
 print("DATASET LOADED")
 # Instantiate the training session by defining the checkpoint state, module, and optimizer
@@ -91,7 +119,7 @@ checkpoint_state = orttraining.CheckpointState.load_checkpoint(
 model = orttraining.Module(
     "training_model.onnx",
     checkpoint_state,
-    "eval_model.onnx",
+    "eval_model2.onnx",
     "cuda"
 )
 
@@ -100,13 +128,13 @@ optimizer = orttraining.Optimizer(
 )
 
 print("TRAINING")
-for epoch in range(5):
+for epoch in range(1):
     train(epoch)
-    test(epoch)
+    # test(epoch)
 
 # ort training api - export the model for so that it can be used for inferencing
-model.export_model_for_inferencing("inference.onnx", ["output"])
-
+# model.export_model_for_inferencing("inference.onnx", ["output"])
+model.export_model_for_inferencing("inference.onnx", ["resnetv17_dense0_fwd"])
 
 # num_batches = int((1300*1000)/batch_size)
 # num_epochs = 1
